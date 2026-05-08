@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}FeastFlow — Food Delivery{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface2: #1a1a1a;
+  --border: #222;
+  --accent: #ff6b2b;
+  --accent2: #ff9f5a;
+  --text: #f0ece4;
+  --muted: #888;
+  --success: #22c55e;
+  --radius: 16px;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:var(--font-body)}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--surface)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 5%;height:68px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px);background:rgba(10,10,10,0.85);border-bottom:1px solid var(--border);transition:.3s}
+.nav-logo{font-family:var(--font-head);font-size:1.5rem;font-weight:800;letter-spacing:-1px}
+.nav-logo span{color:var(--accent)}
+.nav-search{flex:1;max-width:380px;margin:0 2rem;position:relative}
+.nav-search input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:50px;padding:.55rem 1rem .55rem 2.8rem;color:var(--text);font-size:.9rem;font-family:var(--font-body);outline:none;transition:.3s}
+.nav-search input:focus{border-color:var(--accent);background:var(--surface)}
+.nav-search i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.85rem}
+.search-drop{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:none;box-shadow:0 20px 40px rgba(0,0,0,.6);z-index:200}
+.search-drop.show{display:block}
+.search-item{padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;cursor:pointer;transition:.2s}
+.search-item:hover{background:var(--surface)}
+.search-item .si-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+.search-item .si-name{font-size:.9rem;font-weight:500}
+.search-item .si-sub{font-size:.75rem;color:var(--muted)}
+.nav-actions{display:flex;align-items:center;gap:.75rem}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.55rem 1.2rem;border-radius:50px;font-weight:500;font-size:.9rem;transition:.25s;border:none;cursor:pointer}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-accent:hover{background:var(--accent2);transform:translateY(-1px)}
+.cart-btn{position:relative}
+.cart-badge{position:absolute;top:-6px;right:-6px;background:var(--accent);color:#fff;border-radius:50%;width:18px;height:18px;font-size:.65rem;display:flex;align-items:center;justify-content:center;font-weight:700;transition:.3s;transform:scale(0)}
+.cart-badge.show{transform:scale(1)}
+
+/* ── Toasts ── */
+#toast-container{position:fixed;bottom:2rem;right:2rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:.85rem 1.2rem;display:flex;align-items:center;gap:.75rem;min-width:240px;max-width:320px;box-shadow:0 10px 30px rgba(0,0,0,.5);animation:slideIn .3s ease}
+.toast.success{border-color:var(--success)}
+.toast.error{border-color:#ef4444}
+.toast i{font-size:1.1rem}
+.toast.success i{color:var(--success)}
+.toast.error i{color:#ef4444}
+@keyframes slideIn{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideOut{to{opacity:0;transform:translateX(100%)}}
+
+/* ── Auth Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:24px;width:100%;max-width:420px;padding:2.5rem;animation:popIn .3s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes popIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.modal-close{position:absolute;top:1rem;right:1rem;background:var(--surface2);border:none;color:var(--muted);width:32px;height:32px;border-radius:50%;font-size:.9rem;cursor:pointer;transition:.2s}
+.modal-close:hover{color:var(--text)}
+.modal h2{font-family:var(--font-head);font-size:1.6rem;font-weight:700;margin-bottom:.5rem}
+.modal p.sub{color:var(--muted);font-size:.9rem;margin-bottom:2rem}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:.4rem;font-weight:500}
+.form-group input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;color:var(--text);font-size:.95rem;font-family:var(--font-body);outline:none;transition:.3s}
+.form-group input:focus{border-color:var(--accent)}
+.form-group input::placeholder{color:var(--muted)}
+.modal-tabs{display:flex;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:1.5rem;gap:4px}
+.modal-tab{flex:1;text-align:center;padding:.5rem;border-radius:7px;font-size:.9rem;font-weight:500;cursor:pointer;transition:.2s;border:none;background:transparent;color:var(--muted)}
+.modal-tab.active{background:var(--accent);color:#fff}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.modal .btn-accent{width:100%;justify-content:center;padding:.85rem;font-size:1rem;border-radius:12px;margin-top:.5rem}
+.divider{display:flex;align-items:center;gap:1rem;color:var(--muted);font-size:.8rem;margin:1.2rem 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── Page wrapper ── */
+main{padding-top:68px;min-height:100vh}
+.container{max-width:1200px;margin:0 auto;padding:0 5%}
+
+/* ── Footer ── */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:3rem 5%;margin-top:4rem}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem;max-width:1200px;margin:0 auto}
+.footer-brand h3{font-family:var(--font-head);font-size:1.4rem;font-weight:800;margin-bottom:.5rem}
+.footer-brand h3 span{color:var(--accent)}
+.footer-brand p{color:var(--muted);font-size:.9rem;line-height:1.6;margin-bottom:1rem}
+.footer-col h4{font-size:.9rem;font-weight:600;margin-bottom:1rem;color:var(--text)}
+.footer-col a{display:block;color:var(--muted);font-size:.85rem;margin-bottom:.5rem;transition:.2s}
+.footer-col a:hover{color:var(--accent)}
+.footer-bottom{max-width:1200px;margin:2rem auto 0;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:.8rem}
+.social-links{display:flex;gap:.75rem}
+.social-links a{width:36px;height:36px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.85rem;transition:.25s}
+.social-links a:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+
+@media(max-width:768px){
+  .nav-search{display:none}
+  .footer-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+{% block head %}{% endblock %}
+</head>
+<body>
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">Feast<span>Flow</span></a>
+  <li>
+    <a href="{{ url_for('restaurant_panel') }}">Admin Panel</a>
+</li>
+  <div class="nav-search">
+    <i class="fas fa-search"></i>
+    <input type="text" id="globalSearch" placeholder="Search food, restaurants…" autocomplete="off">
+    <div class="search-drop" id="searchDrop"></div>
+  </div>
+  <div class="nav-actions">
+    <a href="/cart" class="btn btn-ghost cart-btn">
+      <i class="fas fa-bag-shopping"></i> Cart
+      <span class="cart-badge" id="cartBadge">0</span>
+    </a>
+    <div id="authArea">
+      <button class="btn btn-accent" onclick="openAuth()"><i class="fas fa-user"></i> Login</button>
+    </div>
+  </div>
+</nav>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeAuth()"><i class="fas fa-times"></i></button>
+    <h2>Welcome back 👋</h2>
+    <p class="sub">Sign in or create your account</p>
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchTab('login',this)">Login</button>
+      <button class="modal-tab" onclick="switchTab('register',this)">Sign Up</button>
+    </div>
+    <!-- Login -->
+    <div class="tab-panel active" id="panel-login">
+      <div class="form-group"><label>Email</label><input type="email" id="l-email" placeholder="you@email.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••"></div>
+      <button class="btn btn-accent" onclick="doLogin()">Login <i class="fas fa-arrow-right"></i></button>
+    </div>
+    <!-- Register -->
+    <div class="tab-panel" id="panel-register">
+      <div class="form-group"><label>Full Name</label><input type="text" id="r-name" placeholder="John Doe"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="r-email" placeholder="you@email.com"></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="r-phone" placeholder="+91 9999999999"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="r-pass" placeholder="••••••••"></div>
+      <button class="btn btn-accent" onclick="doRegister()">Create Account <i class="fas fa-arrow-right"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+{% block content %}{% endblock %}
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <h3>Feast<span>Flow</span></h3>
+      <p>Delivering happiness to your doorstep, one meal at a time. Fast, fresh, and always delicious.</p>
+      <div class="social-links">
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-facebook"></i></a>
+        <a href="#"><i class="fab fa-youtube"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Explore</h4>
+      <a href="/">Home</a>
+      <a href="#">Offers</a>
+      <a href="#">Cuisines</a>
+      <a href="#">Near Me</a>
+    </div>
+    <div class="footer-col">
+      <h4>Account</h4>
+      <a href="/orders">My Orders</a>
+      <a href="/profile">Profile</a>
+      <a href="/cart">Cart</a>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <a href="#">Help Center</a>
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Use</a>
+      <a href="#">Partner with Us</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2024 FeastFlow. All rights reserved.</span>
+    <span>Made with ❤️ for food lovers</span>
+  </div>
+</footer>
+
+<script>
+// ── Toast ──
+function toast(msg, type='success'){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<i class="fas fa-${type==='success'?'circle-check':'circle-exclamation'}"></i><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{t.style.animation='slideOut .3s ease forwards';setTimeout(()=>t.remove(),300)},3000);
+}
+
+// ── Auth ──
+function openAuth(){document.getElementById('authModal').classList.add('show')}
+function closeAuth(){document.getElementById('authModal').classList.remove('show')}
+document.getElementById('authModal').addEventListener('click',e=>{if(e.target===document.getElementById('authModal'))closeAuth()})
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.modal-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(`panel-${tab}`).classList.add('active');
+}
+
+async function doLogin(){
+  const email=document.getElementById('l-email').value;
+  const pass=document.getElementById('l-pass').value;
+  if(!email||!pass){toast('Please fill all fields','error');return}
+  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+  const d=await r.json();
+  if(d.success){closeAuth();updateAuthUI(d.name);toast(`Welcome back, ${d.name}! 🎉`)}
+  else toast(d.error,'error');
+}
+
+async function doRegister(){
+  const name=document.getElementById('r-name').value;
+  const email=document.getElementById('r-email').value;
+  const phone=document.getElementById('r-phone').value;
+  const pass=document.getElementById('r-pass').value;
+  if(!name||!email||!pass){toast('Please fill all fields','error');return}
+  const r=await fetch('/api/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone,password:pass})});
+  const d=await r.json();
+  if(d.success){closeAuth();updateAuthUI(d.name);toast(`Account created! Welcome, ${d.name}! 🎉`)}
+  else toast(d.error,'error');
+}
+
+function updateAuthUI(name){
+  document.getElementById('authArea').innerHTML=`
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <a href="/orders" class="btn btn-ghost"><i class="fas fa-receipt"></i> Orders</a>
+      <div style="position:relative" id="userMenu">
+        <button class="btn btn-accent" onclick="toggleUserMenu()"><i class="fas fa-user"></i> ${name} <i class="fas fa-chevron-down" style="font-size:.7rem"></i></button>
+        <div id="userDrop" style="display:none;position:absolute;right:0;top:calc(100%+8px);background:var(--surface2);border:1px solid var(--border);border-radius:12px;min-width:160px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.5);z-index:200">
+          <a href="/profile" style="display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;font-size:.9rem;transition:.2s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''"><i class="fas fa-user-circle"></i> Profile</a>
+          <a href="/orders" style="display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;font-size:.9rem;transition:.2s" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''"><i class="fas fa-bag-shopping"></i> Orders</a>
+          <div style="height:1px;background:var(--border)"></div>
+          <button onclick="doLogout()" style="display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;font-size:.9rem;width:100%;background:transparent;border:none;color:#ef4444;cursor:pointer"><i class="fas fa-right-from-bracket"></i> Logout</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleUserMenu(){
+  const d=document.getElementById('userDrop');
+  d.style.display=d.style.display==='none'?'block':'none';
+}
+document.addEventListener('click',e=>{const m=document.getElementById('userMenu');if(m&&!m.contains(e.target)){const d=document.getElementById('userDrop');if(d)d.style.display='none'}})
+
+async function doLogout(){
+  await fetch('/api/logout',{method:'POST'});
+  location.reload();
+}
+
+// ── Cart count ──
+async function refreshCartBadge(){
+  const r=await fetch('/api/cart/count');
+  const d=await r.json();
+  const badge=document.getElementById('cartBadge');
+  badge.textContent=d.count;
+  badge.classList.toggle('show',d.count>0);
+}
+refreshCartBadge();
+
+// ── Check session ──
+fetch('/api/me').then(r=>r.json()).then(d=>{if(d.logged_in)updateAuthUI(d.name)});
+
+// ── Global search ──
+let st;
+document.getElementById('globalSearch').addEventListener('input',function(){
+  clearTimeout(st);
+  const q=this.value.trim();
+  const drop=document.getElementById('searchDrop');
+  if(!q){drop.classList.remove('show');return}
+  st=setTimeout(async()=>{
+    const r=await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    const items=await r.json();
+    if(!items.length){drop.classList.remove('show');return}
+    drop.innerHTML=items.map(i=>`
+      <div class="search-item" onclick="location.href='/restaurant/${i.id}'">
+        <div class="si-icon">${i.type==='restaurant'?'🏪':'🍽️'}</div>
+        <div><div class="si-name">${i.name}</div><div class="si-sub">${i.sub}${i.price?` — ₹${i.price}`:''}</div></div>
+      </div>`).join('');
+    drop.classList.add('show');
+  },300);
+});
+document.addEventListener('click',e=>{if(!e.target.closest('.nav-search'))document.getElementById('searchDrop').classList.remove('show')});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

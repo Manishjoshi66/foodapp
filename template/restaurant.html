@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}{{ rest.name }} — FeastFlow{% endblock %}
+
+{% block content %}
+<main>
+
+<!-- HERO -->
+<div class="rest-hero">
+  <h1>{{ rest.name }}</h1>
+  <p>{{ rest.description }}</p>
+</div>
+
+<!-- MENU -->
+<div class="menu-layout">
+
+  <!-- SIDEBAR -->
+  <div class="menu-sidebar">
+    {% for cat in categories %}
+      <a onclick="scrollTo('{{ cat|replace(' ', '-') }}')" id="nav-{{ cat|replace(' ', '-') }}">
+        {{ cat }}
+      </a>
+    {% endfor %}
+  </div>
+
+  <!-- ITEMS -->
+  <div class="menu-items">
+
+    {% for cat in categories %}
+    <div class="cat-section" id="sec-{{ cat|replace(' ', '-') }}">
+      <h2>{{ cat }}</h2>
+
+      {% for item in menu if item.category == cat %}
+      <div class="item-card">
+        <div>{{ item.img }}</div>
+
+        <div>
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.desc }}</p>
+          <strong>₹{{ item.price }}</strong>
+        </div>
+
+        <div id="action-{{ item.id }}">
+          <button onclick="addItem({{ rest.id }}, {{ item.id }}, `{{ item.name }}`, {{ item.price }}, `{{ item.img }}`)">
+            ADD
+          </button>
+        </div>
+
+      </div>
+      {% endfor %}
+
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const restId = {{ rest.id }};
+let localCart = {};
+
+function scrollTo(cat){
+  const el = document.getElementById(`sec-${cat}`);
+  if(el) el.scrollIntoView({behavior:'smooth'});
+}
+
+// ADD ITEM
+async function addItem(rid, iid, name, price, emoji){
+  const res = await fetch('/api/cart/add',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({rid,iid})
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+    localCart[iid] = (localCart[iid] || 0) + 1;
+    renderAction(iid, rid, name, price, emoji);
+    toast(name + " added");
+  }
+}
+
+// RENDER BUTTON
+function renderAction(iid, rid, name, price, emoji){
+  const qty = localCart[iid] || 0;
+  const el = document.getElementById(`action-${iid}`);
+
+  if(qty === 0){
+    el.innerHTML = `<button onclick="addItem(${rid},${iid},\`${name}\`,${price},\`${emoji}\`)">ADD</button>`;
+  } else {
+    el.innerHTML = `
+      <button onclick="changeQty(${rid},${iid},\`${name}\`,${price},\`${emoji}\`,-1)">-</button>
+      ${qty}
+      <button onclick="changeQty(${rid},${iid},\`${name}\`,${price},\`${emoji}\`,1)">+</button>
+    `;
+  }
+}
+
+// CHANGE QTY
+async function changeQty(rid, iid, name, price, emoji, delta){
+  const newQty = (localCart[iid] || 0) + delta;
+
+  await fetch('/api/cart/update',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({rid,iid,qty:newQty})
+  });
+
+  if(newQty <= 0){
+    delete localCart[iid];
+  } else {
+    localCart[iid] = newQty;
+  }
+
+  renderAction(iid, rid, name, price, emoji);
+}
+
+// SIMPLE TOAST
+function toast(msg){
+  alert(msg);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+<h2>Restaurant Dashboard</h2>
+
+{% for order in orders %}
+  <div style="border:1px solid #ccc; margin:10px; padding:10px;">
+    
+    <p><b>Order ID:</b> {{ order.order_id }}</p>
+    <p><b>Item:</b> {{ order.food_name }}</p>
+    <p><b>Qty:</b> {{ order.quantity }}</p>
+    <p><b>Status:</b> {{ order.status }}</p>
+
+    <button onclick="nextStep('{{ order.order_id }}')">
+      Next Step
+    </button>
+
+  </div>
+{% endfor %}
+
+<script>
+async function nextStep(orderId) {
+  await fetch(`/api/order/${orderId}/next`, {
+    method: "POST"
+  });
+
+  alert("Status updated!");
+  location.reload();
+}
+</script>
